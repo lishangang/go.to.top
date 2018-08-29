@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:cache="http://www.springframework.org/schema/cache"
+    xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd
+    http://www.springframework.org/schema/cache  
+	http://www.springframework.org/schema/cache/spring-cache.xsd">
+	<context:component-scan base-package="com.top.**.controller.**">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+	
+	<!-- annotation-driven是一种简写形式，它会自动注册DefaultAnnotationHandlerMapping和AnnotationMethodHandlerAdapter
+	并提供了数据绑定支持，@NumberFormatannotation支持，@DateTimeFormat支持，@Valid支持，读写XML的支持（JAXB），读写JSON的支持（Jackson） -->
+	<mvc:annotation-driven />
+	<!-- <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" >
+		当在HandlerMapping中指定拦截器时，优先执行该拦截器，然后在执行全局拦截器。然后发现对指定请求的拦截器不执行(配置成/user/*就执行，配置成/user/create.do就不执行了)。
+		<property name="interceptors">       
+		     <list>       
+		         <bean class="com.top.spring.mvc.interceptor.UserCreateInterceptor2"></bean>      
+		     </list>       
+		 </property> 
+	</bean>
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" /> -->
+    
+    <!-- 这个类用于Spring MVC视图解析 
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/pages/" />
+        <property name="suffix" value=".jsp" />
+    </bean> -->
+    <!-- 更换视图模式，改为velocity 
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.velocity.VelocityLayoutViewResolver">
+    	<property name="cache" value="false"/>
+        <property name="prefix" value=""/>
+        <property name="suffix" value=".vm"/>
+        <property name="contentType" value="text/html;charset=utf-8"/>
+        <property name="layoutUrl" value="layout/default.vm"/>
+        <property name="toolboxConfigLocation" value="/WEB-INF/velocity/toolbox.xml"/>
+        <property name="exposeSpringMacroHelpers" value="true"/>
+        <property name="exposeRequestAttributes" value="true"/>
+        <property name="exposeSessionAttributes" value="true"/>
+        <property name="allowSessionOverride" value="true"/>
+        <property name="allowRequestOverride" value="true"/>
+    </bean> -->
+    <!-- 上面注释的是单独实现视图，现在配置多视图模式 -->
+    <bean id="multiViewResolver" class="com.top.spring.mvc.view.resolver.MultiViewResolver">
+    	<property name="resolvers">
+    		<map>
+    			<entry key="jsp">
+    				<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+				        <property name="prefix" value="/pages/jsp/" />
+				        <property name="suffix" value=".jsp" />
+				        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"></property>
+				    </bean>
+    			</entry>
+    			<entry key="vm">
+    				<bean class="org.springframework.web.servlet.view.velocity.VelocityLayoutViewResolver">
+				    	<property name="cache" value="false"/>
+				        <property name="prefix" value=""/>
+				        <property name="suffix" value=".vm"/>
+				        <property name="contentType" value="text/html;charset=utf-8"/>
+				        <property name="layoutUrl" value="layout/default.vm"/>
+				        <property name="toolboxConfigLocation" value="/WEB-INF/velocity/toolbox.xml"/>
+				        <property name="exposeSpringMacroHelpers" value="true"/>
+				        <property name="exposeRequestAttributes" value="true"/>
+				        <property name="exposeSessionAttributes" value="true"/>
+				        <property name="allowSessionOverride" value="true"/>
+				        <property name="allowRequestOverride" value="true"/>
+				    </bean>
+    			</entry>
+    		</map>
+    	</property>
+    </bean>
+    
+    <!-- 配置VelocityConfigurer，负责在spring中设置Velocity引擎。通过属性resourceLoaderPath告诉Velocity到哪里寻找它的模板。
+                      通常将模板放到WEB-INF下的某个子目录下，可以保证这些模板不能被直接访问。-->
+    <bean id="velocityConfig" class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
+        <property name="resourceLoaderPath" value="/pages/velocity"/>
+        <property name="configLocation" value="/WEB-INF/velocity/velocity.properties"/>
+    </bean>
+    
+    <mvc:interceptors>
+    	<!-- 直接定义在interceptors下的属于全局拦截器 -->
+    	<bean class="com.top.spring.mvc.interceptor.UserInterceptor" />
+    	<mvc:interceptor>
+    		<!-- 定义在interceptor下的，是针对特定的请求指定拦截器 -->
+    		<mvc:mapping path="/user/create.do"/>
+    		<bean class="com.top.spring.mvc.interceptor.UserCreateInterceptor"/>
+    	</mvc:interceptor>
+    	<!-- 多配制一个，发现按照配置的先后顺序执行 -->
+    	<!-- <mvc:interceptor>
+    		定义在interceptor下的，是针对特定的请求指定拦截器
+    		<mvc:mapping path="/user/cre*.do"/>
+    		<bean class="com.top.spring.mvc.interceptor.UserCreateInterceptor2"/>
+    	</mvc:interceptor> -->
+    </mvc:interceptors>
+    
+    <!-- 处理静态文件的二种方式，还有一种方式是在web.xml中配置tomcat自己的servlet，当然了，如果我们的DispatcherServlet拦截的是*.do，就不存在静态文件被拦截的问题 -->
+    <!-- 如果DispatcherServlet拦截的是/，则拦截所有请求，使静态资源无法访问，所有可以设置resource来解决此问题 -->
+    <mvc:resources location="/images/" mapping="/images/*"></mvc:resources>
+    <!-- 会把"/**" url,注册到SimpleUrlHandlerMapping的urlMap中,把对静态资源的访问由HandlerMapping
+         转到org.springframework.web.servlet.resource.DefaultServletHttpRequestHandler处理并返回.
+	DefaultServletHttpRequestHandler使用就是各个Servlet容器自己的默认Servlet。请求来时会先查handlerMapping，肯定查不到，
+	然后再到SimpleUrlHandlerMapping去查，就能查到了 -->
+    <!-- <mvc:default-servlet-handler/> -->
+    
+    <!-- 配置全局异常处理 -->
+    <bean class="com.top.spring.mvc.ex.resolver.MyExceptionResolver"></bean>
+    
+    <!-- 自定义spring bean上下文工具类 -->
+    <bean class="com.top.spring.context.SpringContextHolder"></bean>
+    
+    <!-- 用来测试获取spring注册的bean的多种方式，无其它意义 -->
+    <bean id="user" class="com.top.spring.mvc.bean.User">
+    	<property name="name" value="jack li"></property>
+    </bean>
+    
+    
+</beans>

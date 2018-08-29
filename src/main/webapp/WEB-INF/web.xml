@@ -1,0 +1,90 @@
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <display-name>go.to.top</display-name>
+  <!-- <listener>
+	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  <context-param>
+	<param-name>contextConfigLocation</param-name>
+	<param-value>classpath:spring.xml</param-value>
+  </context-param> -->
+  <!-- 统计在线人数监听器 -->
+  <listener>
+  	<listener-class>com.top.servlet.listener.OnLineCountListener</listener-class>
+  </listener>
+  <!-- 统计访问量 -->
+  <listener>
+  	<listener-class>com.top.servlet.listener.AccessNumListener</listener-class>
+  </listener>
+  <!-- 初始化某些配置，放到上下文中，比如初始化数据库连接池啊，加载某些东西，像spring的ContextLoaderListener加载spring的配置文件，不过很多东西现在都和spring集成了，这个还真不常用 -->
+  <listener>
+  	<listener-class>com.top.servlet.listener.ContextLoaderListener</listener-class>
+  </listener>
+  <context-param>
+	<param-name>contextTestParam</param-name>
+	<param-value>lsg</param-value>
+  </context-param>
+  <!-- 监听session域内的属性变化 
+  <listener>
+  	<listener-class>com.top.servlet.listener.SessionAttrChangeListener</listener-class>
+  </listener> -->
+  <!-- 监听request域内的属性变化 
+  <listener>
+  	<listener-class>com.top.servlet.listener.RequestAttrChangeListener</listener-class>
+  </listener> -->
+  <!-- 监听context上下文域内的属性变化 
+  <listener>
+  	<listener-class>com.top.servlet.listener.ContextAttrChangeListener</listener-class>
+  </listener> -->
+  <filter>
+	<filter-name>encodingFilter</filter-name>
+	<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+	<init-param>
+		<param-name>encoding</param-name>
+		<param-value>UTF-8</param-value>
+	</init-param>
+	<init-param>
+		<param-name>forceEncoding</param-name>
+		<param-value>true</param-value>
+	</init-param>
+  </filter>
+  <filter-mapping>
+	<filter-name>encodingFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <!-- 自定义过滤器，用来进行用户鉴权 -->
+  <filter>
+	<filter-name>authUserFilter</filter-name>
+	<filter-class>com.top.servlet.filter.AuthUserFilter</filter-class>
+	<init-param>
+		<param-name>ignorUrls</param-name>
+		<param-value>/go.to.top/user/login,/go.to.top/user/onlineCount</param-value>
+	</init-param>
+  </filter>
+  <filter-mapping>
+	<filter-name>authUserFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+	<!-- 可以在一个<filter-mapping>元素中加入任意数目的<dispatcher>，使得filter将会作用于直接从客户端过来的request，通过forward过来的request，通过include过来的request和通过<error-page>过来的request。如果没有指定任何< dispatcher >元素，默认值是REQUEST -->
+	<dispatcher>REQUEST</dispatcher>
+  </filter-mapping>
+  <servlet>
+  	<servlet-name>springmvc</servlet-name>
+  	<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  	<init-param>
+  		<param-name>contextConfigLocation</param-name>
+  		<param-value>classpath:spring-mvc.xml</param-value>
+  	</init-param>
+  	<load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>springmvc</servlet-name>
+  	<url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+  <!-- session失效时间配置，3种配置，1web.xml配置、2tomcat等容器配置、3代码session.setMaxInactiveInterval（）设置，优先级为3 > 1 > 2 -->
+  <session-config>
+  	<session-timeout>30</session-timeout>
+  </session-config>
+  <error-page>
+  	<error-code>404</error-code>
+  	<location>/pages/error/404.html</location>
+  </error-page>
+</web-app>

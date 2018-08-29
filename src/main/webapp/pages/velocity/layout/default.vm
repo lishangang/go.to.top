@@ -1,0 +1,15 @@
+<html>
+<head>
+    <title>$!page_title</title>
+</head>
+<body>
+
+<div>
+
+	嘿嘿，我是默认的最底层公共页面
+    $screen_content
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:cache="http://www.springframework.org/schema/cache"
+    xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/util
+    http://www.springframework.org/schema/util/spring-util.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd
+    http://www.springframework.org/schema/cache  
+	http://www.springframework.org/schema/cache/spring-cache.xsd">
+	<context:annotation-config />
+	<context:component-scan base-package="com.top.**.service.**, com.top.**.component.**">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+	</context:component-scan>
+
+	<cache:annotation-driven/>
+	<!-- 缓存管理器
+	<bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+		<property name="caches">
+			<set>
+				<bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean">  
+                    <property name="name" value="accountCache"/>  
+                </bean>  
+			</set>
+		</property>
+	</bean> -->
+	
+	<!-- 自定义缓存管理器 -->
+	<bean id="cacheManager" class="com.top.spring.cache.manager.MyCacheManager">
+		<property name="caches">
+			<set>
+				<bean class="com.top.spring.cache.MyCache" p:name="accountCache"/>
+			</set>
+		</property>
+	</bean>
+	
+	<!-- 有的时候，我们在代码迁移、调试或者部署的时候，恰好没有 cache 容器，
+	如果这个时候你想调试代码，岂不是要疯掉？这里有一个办法，在不具备缓存条件的时候，在不改代码的情况下，禁用缓存。
+	使用CompositeCacheManager，将缓存管理器放入它里面进行管理。设置fallbackToNoOpCache，true的时候就是如果找不到缓存，比如accountCache就找不到，
+	因为下面设置的是accountCache1，找不到缓存不报错，走业务逻辑。如果是false，就必须要从走缓存去查查有没有，这个时候没有accountCache就会抛异常 
+	<bean id="simpleCacheManager" class="com.top.spring.cache.manager.MyCacheManager">
+		<property name="caches">
+			<set>
+				<bean class="com.top.spring.cache.MyCache" p:name="accountCache1"/>
+			</set>
+		</property>
+	</bean>
+	<bean id="cacheManager" class="org.springframework.cache.support.CompositeCacheManager">
+		<property name="cacheManagers">
+			<list>
+				<ref bean="simpleCacheManager"/>
+			</list>
+		</property>
+		<property name="fallbackToNoOpCache" value="true"></property>
+	</bean>-->
+</beans>
