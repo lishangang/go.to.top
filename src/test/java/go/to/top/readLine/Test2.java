@@ -9,5 +9,6 @@ package go.to.top.readLine;
 public class Test2 {
 
 	public static void main(String[] args) {
+		System.out.println(2222222);
 	}
 }
